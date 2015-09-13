@@ -126,7 +126,7 @@ Once registered you will need the ClientID and the Client Secret to run this app
 
 
 
-<div class="container">
+<div class="container jumbotron">
 <div class="col-md-4">
   <h2> Client Details </h2>
 <div id="Client"> 
@@ -192,7 +192,7 @@ Client Secret 8f6952c397f0489a8cf3c86f03371f6f<br/>
 <!--input type="button" id="load-more">Load More</input-->
 
 <div class="col-md-12">
-  <a id="load-more" class="btn btn-lg btn-info" href="#" onclick=""><i class="fa fa-black-tie"></i>Load More</a>
+  <a id="load-more" class="btn btn-lg btn-info" href="#"><i class="fa fa-black-tie"></i>Load More</a>
 </div>
 
 
@@ -340,7 +340,7 @@ function getInstagramFeed(_url, _accessToken, _clientId, _max_id, handleData) {
         success:function(data) {
         console.log("Ajax Success");
         console.log(data.pagination);
-
+        
         handleData(data); 
         }
     });
@@ -374,10 +374,18 @@ $("#instafeedtable > tbody").html("");
 
 IGurl ='https://api.instagram.com/v1/users/'+ _userid + '/media/recent/?count=60'; //4165329
 
-//user = getInstragramUseridbyUsername("topshop",getQueryVariable("access_token"));
-//alert(user);
+getInstagramFeedbyURL(IGurl, "");
 
-promise = getInstagramFeed(IGurl, getQueryVariable("access_token"), clientId, "", function(output){
+}
+
+//promise.success; 
+
+
+
+function getInstagramFeedbyURL(IGurl, _max_id)
+{
+console.log(IGurl);
+getInstagramFeed(IGurl, getQueryVariable("access_token"), clientId, _max_id, function(output){
   console.log(output);
   printInstagramTable(output);
   console.log(output.pagination.next_max_id);
@@ -385,15 +393,18 @@ promise = getInstagramFeed(IGurl, getQueryVariable("access_token"), clientId, ""
   {
     
     console.log("this has another page " + pageNum);
+    next_page_function = "getInstagramFeedbyURL('" + output.pagination.next_url + "','" + output.pagination.next_max_id + "');";
+    console.log(next_page_function);
+    document.getElementById('load-more').onclick = function() { eval(next_page_function); return false; };
+    //getInstagramFeedbyURL(output.pagination.next_url);
   }
   else
   {
     console.log("this does not has another page");
   }
 });
-}
 
-//promise.success; 
+}
 
 
 
