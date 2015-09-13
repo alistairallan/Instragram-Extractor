@@ -1,0 +1,508 @@
+<html>
+
+
+<head>
+ 
+    <!--link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet"-->
+
+     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+
+     <!--script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script-->
+ 
+    <link href="http://getbootstrap.com/examples/justified-nav/justified-nav.css" rel="stylesheet">
+ 
+    
+</head>
+
+<script type="text/javascript" src="/instafeed.min.js"></script>
+
+<script type="text/javascript" src="/maths.js"></script>
+
+<script type="text/javascript" src="/excellentexport.js"></script>
+
+<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+<script type="text/javascript" src="/sentimental.js"></script>
+
+<script type="text/javascript">
+function getQueryVariable(variable)
+{
+       var query = window.location.hash.substring(1);
+       var vars = query.split("&");
+       for (var i=0;i<vars.length;i++) {
+               var pair = vars[i].split("=");
+               if(pair[0] == variable){return pair[1];}
+       }
+       return(false);
+}
+</script>
+
+<style>
+
+.single
+{
+	width:150px;
+	font-family:arial;
+	font-size:9px;
+	float:left;
+}
+
+.instathumb
+{
+  width:15px;
+  height:15px;
+  border-radius: 15px;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  -webkit-transition: width 1s, height 1s; /* Safari */
+    transition: width 1s, height 1s;
+}
+
+.instathumb:hover
+{
+  width:150px;
+  height:150px;
+}
+
+#instafeed
+{
+  position:absolute;
+  width:1200px;
+  height:250px;
+  background-color:#cccccc;
+}
+
+
+
+</style>
+
+<style>
+        .axis path {
+            fill: none;
+            stroke: #777;
+            shape-rendering: crispEdges;
+        }
+        .axis text {
+            font-family: Lato;
+            font-size: 13px;
+        }
+    </style>
+
+
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><i class="fa fa-instagram"></i>Instagram Data Extractor</a>
+        </div>
+        
+      </div>
+    </nav>
+
+
+ <div id="instructions" class="jumbotron">
+      <div class="container">
+        
+        <p>You need to register for the instagram API <br/>
+Once registered you will need the ClientID and the Client Secret to run this app.<br/> </p>
+        <p><a class="btn btn-primary btn-lg" href="https://instagram.com/developer/" role="button"><i class="fa fa-instagram"></i>Instagram API application registration &raquo;</a></p>
+        <p>Security untick 'Disable implicit OAuth'<br/>
+            The website url can be this pages' url.<br/>
+        </p>
+
+      </div>
+    </div>
+
+
+
+<div class="container">
+<div class="col-md-4">
+  <h2> Client Details </h2>
+<div id="Client"> 
+  Client ID: <input type="text" id="clientID"><div id="clientIDValue"></div><br>
+  Client Secret: <input type="text" id="clientSecret"><div id="clientSecretValue"></div><br>
+    <a id="saveClient" href="#" onclick="saveClient(); return false;" class="btn btn-xs btn-success">Save client</a> 
+    <a id="removeClient" href="#" onclick="removeClient(); return false;" class="btn btn-xs btn-danger">Reset client</a>
+</div>
+</div>
+
+
+<!--br/>
+Client ID c6d7f96668274c93b1344f1964610c2c<br/>
+<br/>
+Client Secret 8f6952c397f0489a8cf3c86f03371f6f<br/>
+<input type="submit" value="Reset"><br/-->
+
+<div class="col-md-4">
+  <h2> Login To Instagram </h2>
+  <a class="btn btn-primary btn-lg" href="https://api.instagram.com/oauth/authorize/?client_id=c6d7f96668274c93b1344f1964610c2c&redirect_uri=http%3A%2F%2Flocalhost%3A1025%2F&response_type=code"><i class="fa fa-instagram"></i> Authorise</a>
+
+<a class="btn btn-primary btn-lg" href="https://instagram.com/oauth/authorize/?client_id=c6d7f96668274c93b1344f1964610c2c&redirect_uri=http%3A%2F%2Flocalhost%3A1025%2F&response_type=token"><i class="fa fa-ticket"></i> Get Token</a>
+</div>
+
+
+<div class="col-md-4">
+  <h2> Select User To Extract Data </h2>
+
+<form>
+  Username: <input id="IGusername" type="text"><br>
+  UserID: <div id="IGuserid"></div>
+  <a class="btn btn-primary btn-lg" href="#" onclick="GetUserID(); return false;"><i class="fa fa-user"></i> Get UserID</a>
+  <a id="btnExtract" class="btn btn-primary btn-lg" href="#" onclick="getIGtable(localStorage.userID); return false;"><i class="fa fa-table"></i> Extract data</a>
+</form>
+</div>
+</div> <!-- End container -->
+
+<!--div id="instafeed"></div> 
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br-->
+<table id="instafeedtable" class="table table-striped">
+<thead>
+<tr><th>Row</th>
+<th></th>  
+<th>Caption</th> 
+<th>Date Posted</th>
+<th>Hour of Day</th>
+<th>No. Comments</th>
+<th>No. Likes</th>
+<th>No. Tags</th>
+<th>Type</th>
+<th>Filter</th>
+<th>Tags</th>
+<th>Sentiment</th>
+</tr>
+</thead>
+<tbody>
+</tbody>  
+</table> 
+
+
+<div class="container">
+
+<!--input type="button" id="load-more">Load More</input-->
+
+<div class="col-md-12">
+  <a id="load-more" class="btn btn-lg btn-info" href="#" onclick=""><i class="fa fa-black-tie"></i>Load More</a>
+</div>
+
+
+<div class="col-md-4"><a download="somedata.xls" class="btn btn-info" href="#" onclick="return ExcellentExport.excel(this, 'instafeedtable', 'Sheet Name Here');"><i class="fa fa-black-tie"></i>Export to Excel</a></div>
+<div class="col-md-4"><a download="somedata.csv" class="btn btn-info" href="#" onclick="return ExcellentExport.csv(this, 'instafeedtable');">Export to CSV - UTF8</a></div>
+<div class="col-md-4"><a download="somedata.csv" class="btn btn-info" href="#" onclick="return ExcellentExport.csv(this, 'instafeedtable', ';');">Export to CSV - ";" - UTF8</a></div>
+</div>
+ 
+
+
+<script>
+var accessToken = 'c6d7f96668274c93b1344f1964610c2c';
+var clientId = 'c6d7f96668274c93b1344f1964610c2c';
+var pageNum =0;
+
+console.log("Starting...");
+
+$.ajaxSetup({
+  type: 'GET',
+  dataType: "jsonp",
+  delay: 1
+});
+ 
+function getInstagramFeedbyUserID(_userId, _accessToken, _clientId, _max_id, handleData) {
+
+  getInstagramFeed('https://api.instagram.com/v1/users/'+ _userId +'/media/recent/?count=60', _userId, _accessToken, _clientId, _max_id, handleData)
+
+}
+
+
+function checkUserID()
+{
+
+if( localStorage.clientID.length>5)
+{
+  document.getElementById("btnExtract").style.display = 'inline';
+  document.getElementById('IGuserid').innerHTML = localStorage.userID;
+}
+else
+{
+  document.getElementById("btnExtract").style.display = 'none';
+}
+
+}
+
+
+function checkClientSaved()
+{
+
+  if( localStorage.clientID.length>10 && localStorage.clientSecret.length>10)
+  {
+
+      console.log('Saved Client Found');
+
+      document.getElementById("clientID").style.display = 'none';
+      document.getElementById("clientSecret").style.display = 'none';
+      document.getElementById("saveClient").style.display = 'none';
+      document.getElementById("instructions").style.display = 'none'; 
+      
+      document.getElementById("clientIDValue").style.display = 'block';
+      document.getElementById("clientSecretValue").style.display = 'block';
+      document.getElementById("removeClient").style.display = 'inline';
+     
+
+      document.getElementById("clientIDValue").innerHTML = localStorage.clientID;
+      document.getElementById("clientSecretValue").innerHTML = localStorage.clientSecret;
+
+  }
+
+  else
+  {
+
+      console.log('No Saved Client Found');
+
+      document.getElementById("clientID").style.display = 'block';
+      document.getElementById("clientSecret").style.display = 'block';
+      document.getElementById("saveClient").style.display = 'block';
+      document.getElementById("instructions").style.display = 'block';
+      
+      document.getElementById("clientIDValue").style.display = 'none';
+      document.getElementById("clientSecretValue").style.display = 'none';
+      document.getElementById("removeClient").style.display = 'none';
+  }
+
+
+
+}
+
+function removeClient()
+{
+  localStorage.removeItem("clientID");
+  localStorage.removeItem("clientSecret");
+  console.log('Client Removed');
+}
+
+
+function saveClient()
+{
+  localStorage.clientID = document.getElementById("clientID").value;
+  localStorage.clientSecret = document.getElementById("clientSecret").value;
+  console.log('Client Saved, ClientID=' + localStorage.clientID + " ClientSecret=" + localStorage.clientSecret);
+  checkClientSaved();
+}
+
+
+function GetUserID()
+{
+var txtIGusername = document.getElementById('IGusername');
+getInstragramUseridbyUsername(txtIGusername.value, getQueryVariable("access_token"));
+
+}
+
+function getInstragramUseridbyUsername(_username, _accessToken) {
+user_id =0;
+$.ajax({
+        url: "https://api.instagram.com/v1/users/search?q="+_username+"&count=1&access_token="+_accessToken,
+              
+        //username: _username,
+        success: function (data) {
+          console.log('got userid');
+          console.log(data);
+          console.log(data.data[0].id);
+          user_id=data.data[0].id;
+          document.getElementById('IGuserid').innerHTML = data.data[0].id;
+          localStorage.userID = data.data[0].id;
+        }
+      });
+
+return user_id;
+
+}
+
+
+
+
+function getInstagramFeed(_url, _accessToken, _clientId, _max_id, handleData) {
+    console.log("About to call ajax");
+    $.ajax({
+        url: _url,
+        //dataType: 'jsonp',
+        //type: 'GET',
+        data: {accessToken: _accessToken, 
+        client_id: _clientId,
+        max_id: ""},
+        success:function(data) {
+        console.log("Ajax Success");
+        console.log(data.pagination);
+
+        handleData(data); 
+        }
+    });
+
+    //console.log(data.meta);
+}
+
+//Check if user has logged into Instagram
+function checkAuthorised()
+{
+
+
+}
+
+
+//*****************************************************
+//            MAIN PROGRAM
+//*****************************************************
+
+checkClientSaved();
+
+checkUserID();
+
+//alert(analyze("Hey you worthless scumbag").score);
+
+function getIGtable(_userid)
+{
+
+//$('#instafeedtable').empty();
+$("#instafeedtable > tbody").html("");
+
+IGurl ='https://api.instagram.com/v1/users/'+ _userid + '/media/recent/?count=60'; //4165329
+
+//user = getInstragramUseridbyUsername("topshop",getQueryVariable("access_token"));
+//alert(user);
+
+promise = getInstagramFeed(IGurl, getQueryVariable("access_token"), clientId, "", function(output){
+  console.log(output);
+  printInstagramTable(output);
+  console.log(output.pagination.next_max_id);
+  if (output.pagination.next_max_id.length > 0)
+  {
+    
+    console.log("this has another page " + pageNum);
+  }
+  else
+  {
+    console.log("this does not has another page");
+  }
+});
+}
+
+//promise.success; 
+
+
+
+
+function printInstagramTable(feed)
+{
+console.log("Printing Table");
+for(x in feed.data){
+   var date = new Date(parseInt(feed.data[x].created_time) * 1000);
+   likes=feed.data[x].likes.count;
+
+   var allcomments="";
+   for(y in feed.data[x].comments.data){
+      allcomments += feed.data[x].comments.data[y].text + ' '; //feed.data[x].comments.data[0].text
+    }
+    commentSentiment = analyze(allcomments).score;
+
+   var alltags="";
+   for(t in feed.data[x].tags){
+      alltags += feed.data[x].tags[t] + ', '; 
+    } 
+    var alltags = alltags.substring(0, alltags.length-2); //remove last comma
+
+
+
+   $('#instafeedtable').append('<tr>\
+                                  <td>'+x+'</td>\
+                                  <td><img src='+ feed.data[x].images.thumbnail.url + ' width="35" height="35"></td>\
+                                  <td>'+ feed.data[x].caption.text + '</td>\
+                                  <td>'+ date.getDate()+'/'+(date.getMonth()+1)+'/'+date.getFullYear() + '</td>\
+                                  <td>'+ date.getHours() + '</td>\
+                                  <td>'+ feed.data[x].comments.count + '</td>\
+                                  <td>'+ likes + '</td>\
+                                  <td>'+ feed.data[x].tags.length + '</td>\
+                                  <td>'+ feed.data[x].type + '</td>\
+                                  <td>'+ feed.data[x].filter + '</td>\
+                                  <td>'+ alltags + '</td>\
+                                  <td>'+ commentSentiment + '</td>\
+                                  </tr>');
+ }
+
+}
+
+
+
+
+
+
+//getInstagramFeed(4165329, getQueryVariable("access_token"), clientId,console.log() );
+
+
+
+var allLikes = []; 
+/*$.ajax({
+    url: 'https://api.instagram.com/v1/users/4165329/media/recent/',
+    //url: 'https://api.instagram.com/v1/media/popular',
+    dataType: 'jsonp',
+    type: 'GET',
+    data: {accessToken: getQueryVariable("access_token"), client_id: accessToken, count: 60},
+    success: function(data){
+        console.log(data);
+        //var allLikes = []; 
+        for(x in data.data){
+          var date = new Date(parseInt(data.data[x].created_time) * 1000);
+          likes=data.data[x].likes.count;
+          xpos=x*15;
+          ypos=200-(likes/1000);
+         allLikes.push(likes);
+
+
+          $('#instafeedtable').append('<tr>\
+                                  <td>'+ date.getDate()+'/'+(date.getMonth()+1)+'/'+date.getFullYear() + '</td>\
+                                  <td>'+ date.getHours() + '</td>\
+                                  <td>'+ data.data[x].images.thumbnail.url + '</td>\
+                                  <td>'+ data.data[x].comments.count + '</td>\
+                                  <td>'+ likes + '</td>\
+                                  <td>'+ data.data[x].tags.length + '</td>\
+                                  </tr>');
+
+          $('#instafeed').append('<div style="position:absolute; top:'+ypos+'px; left:'+xpos+'px"><img class="instathumb" src="'+data.data[x].images.thumbnail.url+'"></div>');
+            
+        }
+        $('#stats').html('mean='+Math.round(mean(allLikes))+'<br> stddev='+Math.round(stddev(allLikes))+'<br> Likes: '+allLikes.toString());
+        igStddev = Math.round(stddev(allLikes));
+        igMean  = Math.round(mean(allLikes));
+        MeanPos = 200-(igMean/1000);
+        $('#instafeed').append('<div style="background-color:red; height:1px; width:1200px; position:absolute; top:'+MeanPos+'px; left:0px"></div>');
+
+
+
+    },
+    error: function(data){
+        console.log(data);
+    }
+});*/
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+</body>
+</html>
+
+
